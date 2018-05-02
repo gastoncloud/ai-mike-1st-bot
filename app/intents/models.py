@@ -4,10 +4,6 @@ from mongoengine.fields import ListField,\
     ObjectIdField, StringField,\
     BooleanField, Document
 
-
-
-
-
 class LabeledSentences(EmbeddedDocument):
     id = ObjectIdField(required=True, default=lambda: ObjectId())
     data = ListField(required=True)
@@ -33,10 +29,11 @@ class ApiDetails(EmbeddedDocument):
     isJson = BooleanField(default=False)
     jsonData = StringField(default="{}")
 
-
 class Intent(Document):
     name = StringField(max_length=100, required=True, unique=True)
     userDefined = BooleanField(default=True)
+    inputContext = ListField(default=[])
+    outputContext = ListField(default=[])
     intentId = StringField(required=True)
     apiTrigger = BooleanField(required=True)
     apiDetails = EmbeddedDocumentField(ApiDetails)

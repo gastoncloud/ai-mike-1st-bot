@@ -10,6 +10,32 @@
       <textarea matInput formControlName="intentId" placeholder="Intent ID"></textarea>
     </mat-form-field>
 
+    <div class="contexts" fxLayout="column" >
+
+        <mat-form-field>
+            <mat-chip-list #inputContexts>
+              <mat-chip *ngFor="let context of intentForm.controls.inputContexts.controls;let context_index=index" [selectable]="true" [removable]="true" (remove)="removeInputContext(context_index)">
+                {{context.value}}
+                <mat-icon matChipRemove *ngIf="true">cancel</mat-icon>
+              </mat-chip>
+              <input placeholder="Input Contexts" [matChipInputFor]="inputContexts" [matChipInputSeparatorKeyCodes]="separatorKeysCodes" [matChipInputAddOnBlur]="true"
+                (matChipInputTokenEnd)="addInputContext($event)" />
+            </mat-chip-list>
+          </mat-form-field>
+
+          <mat-form-field>
+              <mat-chip-list #outputContexts>
+                <mat-chip *ngFor="let context of intentForm.controls.outputContexts.controls;let context_index=index" [selectable]="true" [removable]="true" (remove)="removeOutputContext(context_index)">
+                  {{context.value}}
+                  <mat-icon matChipRemove *ngIf="true">cancel</mat-icon>
+                </mat-chip>
+                <input placeholder="Output contexts" [matChipInputFor]="outputContexts" [matChipInputSeparatorKeyCodes]="separatorKeysCodes" [matChipInputAddOnBlur]="true"
+                  (matChipInputTokenEnd)="addOutputContext($event)" />
+              </mat-chip-list>
+            </mat-form-field>
+
+    </div>
+
     <h2>Parameters
       <button type="button"  mat-mini-fab (click)="addParameter()" color="primary">
         <mat-icon aria-label="New Parameter">add</mat-icon>

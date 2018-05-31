@@ -1,9 +1,12 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { FormGroup, FormBuilder, FormArray,Validators } from '@angular/forms';
+import { FormGroup, FormBuilder, FormArray,Validators,FormControl } from '@angular/forms';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 
 import { UtilsService } from '../../services/utils.service';
 import {IntentService  } from '../../services/intent.service';
+
+import {MatChipInputEvent} from '@angular/material';
+import {ENTER, COMMA} from '@angular/cdk/keycodes';
 
 @Component({
   selector: 'app-intent',
@@ -19,6 +22,7 @@ export class IntentComponent implements OnInit {
   intentTypes;
   intentTypesArray;
   message;
+  separatorKeysCodes = [ENTER, COMMA];
 
   constructor(
     public fb: FormBuilder,
@@ -40,6 +44,8 @@ export class IntentComponent implements OnInit {
       intentId: [''],
       userDefined: [true],
       speechResponse: [''],
+      inputContexts:this.fb.array(this.intent ? this.intent.inputContexts : []),
+      outputContexts:this.fb.array(this.intent ? this.intent.outputContexts : []),
       apiTrigger: [false],
       apiDetails: this.initApiDetails(),
       parameters: this.fb.array(
@@ -150,6 +156,37 @@ export class IntentComponent implements OnInit {
 
   apiTrigger() {
     return this.intentForm.value.apiTrigger;
+  }
+
+  /* Contexts */
+
+  addInputContext(event){
+    if (event.value == "")
+      return
+    const control = <FormArray>this.intentForm.controls['inputContexts'];
+    control.push(new FormControl(event.value))
+
+    event.input.value = ""
+  }
+
+  addOutputContext(event){
+    if (event.value == "")
+      return
+    const control = <FormArray>this.intentForm.controls['outputContexts'];
+    control.push(new FormControl(event.value))
+    event.input.value = ""
+  }
+
+  removeInputContext(context_index){
+    const control = <FormArray>this.intentForm.controls['inputContexts'];
+    control.removeAt(context_index);
+
+  }
+
+  removeOutputContext(context_index){
+    const control = <FormArray>this.intentForm.controls['outputContexts'];
+    control.removeAt(context_index);
+
   }
 
 }

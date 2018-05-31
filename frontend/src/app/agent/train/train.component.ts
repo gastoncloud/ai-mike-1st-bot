@@ -2,7 +2,6 @@ import { Component, OnInit, Input } from '@angular/core';
 import { FormGroup, FormBuilder } from '@angular/forms';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 
-import { CoreService } from '../../services/core.service';
 import {IntentService  } from '../../services/intent.service';
 
 import { TrainingService } from '../../services/training.service';
@@ -75,6 +74,21 @@ export class TrainComponent implements OnInit {
     )
     
   }
+
+  // 123456
+  getAnnotatedText(example){
+    let text = example.text
+    example.entities.forEach(entity => {
+      var key =entity.value;
+      var regex = new RegExp(key,'g');
+      text =  text.replace(regex,'&nbsp;<mark style="background: red;">'+key+'</mark>&nbsp;' );
+    });
+    return text
+  }
+  // updateValue($event,example_index){
+  //   this.trainingData[example_index]["text"]=$event.srcElement.outerText;
+    
+  // }
 
   addNewExample(){
     this.trainingData.unshift({
@@ -188,4 +202,24 @@ export class TrainComponent implements OnInit {
         }
     }
 }
+
+//place curser at the end of content editable div
+  placeCaretAtEnd(el) {
+    el.focus();
+    if (typeof window.getSelection != "undefined"
+            && typeof document.createRange != "undefined") {
+        var range = document.createRange();
+        range.selectNodeContents(el);
+        range.collapse(false);
+        var sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+    } else if (typeof (<any>document.body).createTextRange != "undefined") {
+        var textRange = (<any>document.body).createTextRange();
+        textRange.moveToElementText(el);
+        textRange.collapse(false);
+        textRange.select();
+    }
+  }
+
 }

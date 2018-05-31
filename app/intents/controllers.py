@@ -5,7 +5,7 @@ from flask import Blueprint, request, Response
 from flask import current_app as app
 from app.commons import build_response
 from app.intents.models import Intent, Parameter, ApiDetails
-from app.commons.functions import update_document
+from app.commons.utils import update_document
 
 
 intents = Blueprint('intents_blueprint', __name__,
@@ -36,6 +36,7 @@ def create_intent():
             api_details.jsonData = content.get("apiDetails").get("jsonData")
 
         api_details.url = content.get("apiDetails").get("url")
+        api_details.headers = content.get("apiDetails").get("headers")
         api_details.requestType = content.get("apiDetails").get("requestType")
         intent.apiDetails = api_details
     else:

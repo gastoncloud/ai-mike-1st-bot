@@ -24,6 +24,8 @@ def create_intent():
     intent = Intent()
     intent.name = content.get("name")
     intent.intentId = content.get("intentId")
+    intent.inputContexts = content.get("inputContexts")
+    intent.outputContexts = content.get("outputContexts")
     intent.speechResponse = content.get("speechResponse")
     intent.trainingData = []
 

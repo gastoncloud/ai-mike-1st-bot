@@ -125,7 +125,7 @@ def delete_intent(id):
 
 
 from flask import send_file
-import StringIO
+from io import StringIO
 
 
 @intents.route('/export', methods=['GET'])

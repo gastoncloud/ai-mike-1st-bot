@@ -189,6 +189,7 @@ def api():
                 template = Template(intent.speechResponse,
                                     undefined=SilentUndefined)
                 result_json["speechResponse"] = split_sentence(template.render(**context))
+
         logger.info(request_json.get("input"), extra=result_json)
         return build_response.build_json(result_json)
     else:

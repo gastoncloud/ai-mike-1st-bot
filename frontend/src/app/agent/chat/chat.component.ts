@@ -52,12 +52,14 @@ export class ChatComponent implements OnInit {
   ngOnInit() {
     this.chatInitial = {
       'currentNode': '',
-      'complete': null, 'context': {},
+      'complete': null, 
+      'context': [],
       'parameters': [],
       'extractedParameters': {},
       'speechResponse': '',
       'intent': {},
-      'input': 'init_conversation',
+      'input': '',
+      'event':'init_conversation',
       'missingParameters': []
     };
 

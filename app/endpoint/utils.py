@@ -66,3 +66,31 @@ class SilentUndefined(Undefined):
         __getitem__ = __lt__ = __le__ = __gt__ = __ge__ = __int__ = \
         __float__ = __complex__ = __pow__ = __rpow__ = \
         _fail_with_undefined_error
+
+
+
+
+from functools import reduce
+from itertools import groupby
+from operator import add, itemgetter
+
+def merge_records_by(key, combine):
+    """Returns a function that merges two records rec_a and rec_b.
+       The records are assumed to have the same value for rec_a[key]
+       and rec_b[key].  For all other keys, the values are combined
+       using the specified binary operator.
+    """
+    return lambda rec_a, rec_b: {
+        k: rec_a[k] if k == key else combine(rec_a[k], rec_b[k])
+        for k in rec_a
+    }
+
+def merge_list_of_records_by(key, combine):
+    """Returns a function that merges a list of records, grouped by
+       the specified key, with values combined using the specified
+       binary operator."""
+    keyprop = itemgetter(key)
+    return lambda lst: [
+        reduce(merge_records_by(key, combine), records)
+        for _, records in groupby(sorted(lst, key=keyprop), keyprop)
+    ]

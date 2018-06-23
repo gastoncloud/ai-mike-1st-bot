@@ -93,8 +93,6 @@ def api():
                                                                  request_json.get("input"))
 
                 # initialize context manage
-                context_manager.update_context_memory(intent,extracted_parameters)
-
                 missing_parameters = []
                 result_json["missingParameters"] = []
                 result_json["extractedParameters"] = {}
@@ -156,6 +154,7 @@ def api():
                 result_json["complete"] = True
 
         if result_json["complete"]:
+            context_manager.update_context_memory(intent, result_json["extractedParameters"])
             if intent.apiTrigger:
                 isJson = False
                 parameters = result_json["extractedParameters"]
@@ -178,7 +177,7 @@ def api():
                     app.logger.warn("API call failed", e)
                     result_json["speechResponse"] = ["Service is not available. Please try again later."]
                 else:
-                    context_manager.update_contexts({
+                    context_manager.update_request_context({
                         "result":result
                     })
                     template = Template(
@@ -190,7 +189,6 @@ def api():
                 app.logger.info(context_manager.get_request_context())
                 result_json["speechResponse"] = split_sentence(template.render(**context_manager.get_request_context()))
 
-        context_manager.update_context_memory(intent,result_json.get("extractedParameters"))
         result_json["context"] = context_manager.context_memory
         logger.info(request_json.get("input"), extra=result_json)
         return build_response.build_json(result_json)

@@ -46,11 +46,6 @@ class ContextManager():
 
         self.context_memory= merge_list_by_key(self.context_memory,output_contexts,"name")
 
-        # for context in self.output_contexts:
-        #     for existing_context in self.context_memory:
-        #         if context == existing_context.get("name"):
-        #             existing_context.get("parameters").extent(parameters)
-
     def unset_contexts(self):
         self.context_memory = []
 

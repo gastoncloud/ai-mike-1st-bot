@@ -93,7 +93,7 @@ def api():
                                                                  request_json.get("input"))
 
                 # initialize context manage
-                context_manager.update_contexts(intent,extracted_parameters)
+                context_manager.update_context_memory(intent,extracted_parameters)
 
                 missing_parameters = []
                 result_json["missingParameters"] = []
@@ -140,9 +140,7 @@ def api():
 
                 if len(result_json["missingParameters"]) == 0:
                     result_json["complete"] = True
-                    request_context = {}
-                    request_context.update(result_json["extractedParameters"])
-                    request_context.update(context_manager.get_contexts())
+                    context_manager.update_request_context(result_json["extractedParameters"])
                 else:
                     missing_parameter = result_json["missingParameters"][0]
                     result_json["complete"] = False
@@ -165,12 +163,12 @@ def api():
                 app.logger.info("headers %s"%headers)
                 url_template = Template(
                     intent.apiDetails.url, undefined=SilentUndefined)
-                rendered_url = url_template.render(**request_context)
+                rendered_url = url_template.render(**context_manager.get_request_context())
                 if intent.apiDetails.isJson:
                     isJson = True
                     request_template = Template(
                         intent.apiDetails.jsonData, undefined=SilentUndefined)
-                    parameters = json.loads(request_template.render(**request_context))
+                    parameters = json.loads(request_template.render(**context_manager.get_request_context()))
 
                 try:
                     result = call_api(rendered_url,
@@ -180,17 +178,19 @@ def api():
                     app.logger.warn("API call failed", e)
                     result_json["speechResponse"] = ["Service is not available. Please try again later."]
                 else:
-                    request_context["result"] = result
+                    context_manager.update_contexts({
+                        "result":result
+                    })
                     template = Template(
                         intent.speechResponse, undefined=SilentUndefined)
-                    result_json["speechResponse"] = split_sentence(template.render(**request_context))
+                    result_json["speechResponse"] = split_sentence(template.render(**context_manager.get_request_context()))
             else:
-                request_context["result"] = {}
                 template = Template(intent.speechResponse,
                                     undefined=SilentUndefined)
-                result_json["speechResponse"] = split_sentence(template.render(**request_context))
+                app.logger.info(context_manager.get_request_context())
+                result_json["speechResponse"] = split_sentence(template.render(**context_manager.get_request_context()))
 
-        context_manager.update_contexts(intent,result_json.get("extractedParameters"))
+        context_manager.update_context_memory(intent,result_json.get("extractedParameters"))
         result_json["context"] = context_manager.context_memory
         logger.info(request_json.get("input"), extra=result_json)
         return build_response.build_json(result_json)

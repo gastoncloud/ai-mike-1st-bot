@@ -70,27 +70,20 @@ class SilentUndefined(Undefined):
 
 
 
-from functools import reduce
-from itertools import groupby
-from operator import add, itemgetter
+from collections import defaultdict
+from operator import itemgetter
 
-def merge_records_by(key, combine):
-    """Returns a function that merges two records rec_a and rec_b.
-       The records are assumed to have the same value for rec_a[key]
-       and rec_b[key].  For all other keys, the values are combined
-       using the specified binary operator.
+def merge_list_by_key(l1, l2, key):
     """
-    return lambda rec_a, rec_b: {
-        k: rec_a[k] if k == key else combine(rec_a[k], rec_b[k])
-        for k in rec_a
-    }
+    merge 2 lists by a key
+    :param l1:
+    :param l2:
+    :param key:
+    :return l3:
+    """
+    d = defaultdict(dict)
+    for l in (l1, l2):
+        for elem in l:
+            d[elem[key]].update(elem)
 
-def merge_list_of_records_by(key, combine):
-    """Returns a function that merges a list of records, grouped by
-       the specified key, with values combined using the specified
-       binary operator."""
-    keyprop = itemgetter(key)
-    return lambda lst: [
-        reduce(merge_records_by(key, combine), records)
-        for _, records in groupby(sorted(lst, key=keyprop), keyprop)
-    ]
+    return sorted(d.values(), key=itemgetter(key))

@@ -53,7 +53,13 @@ export class ChatComponent implements OnInit {
     this.chatInitial = {
       'currentNode': '',
       'complete': null, 
-      'context': [],
+      'context': [{
+        "name": "global",
+        "parameters": {
+          "name": "Alfred",
+        },
+        "lifespan":-1
+    }],
       'parameters': [],
       'extractedParameters': {},
       'speechResponse': '',

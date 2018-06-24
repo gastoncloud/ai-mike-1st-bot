@@ -125,7 +125,7 @@ def delete_intent(id):
 
 
 from flask import send_file
-from io import StringIO
+from io import BytesIO
 
 
 @intents.route('/export', methods=['GET'])
@@ -134,8 +134,8 @@ def export_intents():
     Deserialize and export Mongoengines as jsonfile
     :return:
     """
-    strIO = StringIO.StringIO()
-    strIO.write(Intent.objects.to_json())
+    strIO = BytesIO()
+    strIO.write(Intent.objects.to_json().encode('utf-8'))
     strIO.seek(0)
     return send_file(strIO,
                      attachment_filename="iky_intents.json",

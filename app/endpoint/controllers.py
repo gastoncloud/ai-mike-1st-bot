@@ -154,7 +154,10 @@ def api():
                 result_json["complete"] = True
 
         if result_json["complete"]:
+            context_manager.update_request_context(result_json["extractedParameters"])
             context_manager.update_context_memory(intent, result_json["extractedParameters"])
+            app.logger.info("$$$$$$$$$$$$")
+            app.logger.info(context_manager.request_context)
             if intent.apiTrigger:
                 isJson = False
                 parameters = result_json["extractedParameters"]

@@ -1,20 +1,17 @@
 import json
-
 from jinja2 import Template
-
 from flask import Blueprint, request, abort
 from app import app
-
 from app.commons.logger import logger
 from app.commons import build_response
 from app.nlu.entity_extractor import EntityExtractor
+from app.nlu.tasks import model_updated_signal
 from app.intents.models import Intent
-
 from app.endpoint.utils import get_synonyms, SilentUndefined, split_sentence, call_api
+from app.agents.models import Bot
 
 endpoint = Blueprint('api', __name__, url_prefix='/api')
 
-# Loading ML Models at app startup
 from app.nlu.classifiers.starspace_intent_classifier import EmbeddingIntentClassifier
 
 sentence_classifier = None
@@ -214,14 +211,13 @@ def update_model(app, message, **extra):
     global entity_extraction
     entity_extraction = EntityExtractor(synonyms)
     app.logger.info("Intent Model updated")
-
+    
+# Loading ML Models at app startup
 with app.app_context():
     update_model(app,"Modles updated")
 
-from app.nlu.tasks import model_updated_signal
 model_updated_signal.connect(update_model, app)
 
-from app.agents.models import Bot
 def predict(sentence):
     """
     Predict Intent using Intent classifier

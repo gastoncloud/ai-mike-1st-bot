@@ -1,11 +1,16 @@
 import os
-from bson.json_util import dumps
+from io import BytesIO
+
+from bson.json_util import loads,dumps
 from bson.objectid import ObjectId
-from flask import Blueprint, request, Response
+
+from flask import Blueprint, request, Response,send_file,abort
 from flask import current_app as app
+
 from app.commons import build_response
 from app.intents.models import Intent, Parameter, ApiDetails
 from app.commons.utils import update_document
+from app.nlu.tasks import train_models
 
 
 intents = Blueprint('intents_blueprint', __name__,
@@ -99,7 +104,6 @@ def update_intent(id):
     return 'success', 200
 
 
-from app.nlu.tasks import train_models
 
 
 @intents.route('/<id>', methods=['DELETE'])
@@ -124,8 +128,6 @@ def delete_intent(id):
     return build_response.sent_ok()
 
 
-from flask import send_file
-from io import BytesIO
 
 
 @intents.route('/export', methods=['GET'])
@@ -142,8 +144,7 @@ def export_intents():
                      as_attachment=True)
 
 
-from flask import abort
-from bson.json_util import loads
+
 
 
 @intents.route('/import', methods=['POST'])

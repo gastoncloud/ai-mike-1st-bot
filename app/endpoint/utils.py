@@ -73,6 +73,7 @@ class SilentUndefined(Undefined):
 from collections import defaultdict
 from operator import itemgetter
 
+
 def merge_list_by_key(l1, l2, key):
     """
     merge 2 lists by a key
@@ -86,4 +87,5 @@ def merge_list_by_key(l1, l2, key):
         for elem in l:
             d[elem[key]].update(elem)
 
-    return sorted(d.values(), key=itemgetter(key))
+    # return sorted(d.values(), key=itemgetter(key))
+    return d.values()

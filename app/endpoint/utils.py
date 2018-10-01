@@ -88,4 +88,4 @@ def merge_list_by_key(l1, l2, key):
             d[elem[key]].update(elem)
 
     # return sorted(d.values(), key=itemgetter(key))
-    return d.values()
+    return list(d.values())

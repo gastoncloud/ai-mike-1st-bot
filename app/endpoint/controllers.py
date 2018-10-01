@@ -18,6 +18,7 @@ sentence_classifier = None
 synonyms = None
 entity_extraction = None
 
+
 # Request Handler
 @endpoint.route('/v1', methods=['POST'])
 def api():
@@ -63,17 +64,16 @@ def api():
             del result_json["event"]
 
         elif request_json.get("input"):
-            query_intent_id, confidence,suggetions = predict(request_json.get("input"))
+            query_intent_id, confidence, suggetions = predict(request_json.get("input"))
         else:
-            abort(400,"invalid request")
+            abort(400, "invalid request")
 
-        if  new_intent_flag:
+        if new_intent_flag:
             intent_id = query_intent_id
         else:
             intent_id = request_json["intent"]["id"]
 
         intent = Intent.objects.get(intentId=intent_id)
-
 
         # add intent information to final payload
         result_json["intent"] = {
@@ -81,8 +81,9 @@ def api():
             "confidence": confidence,
             "id": str(intent.intentId)
         }
-
-        if new_intent_flag:
+        app.logger.info("*******************************" + query_intent_id)
+        app.logger.info("*******************************" + str("cancel" != query_intent_id))
+        if new_intent_flag and ("cancel" != query_intent_id):
 
             if intent.parameters:
                 # Extract NER entities
@@ -120,35 +121,38 @@ def api():
             else:
                 result_json["complete"] = True
 
-        elif not request_json.get("complete"):
-            if "cancel" not in intent.name:
+        elif ((not request_json.get("complete")) and ("cancel" != query_intent_id)):
 
-                extracted_parameter = entity_extraction.replace_synonyms({
-                    request_json.get("currentNode"): request_json.get("input")
-                })
+            extracted_parameter = entity_extraction.replace_synonyms({
+                request_json.get("currentNode"): request_json.get("input")
+            })
 
-                # replace synonyms for entity values
-                result_json["extractedParameters"].update(extracted_parameter)
+            # replace synonyms for entity values
+            result_json["extractedParameters"].update(extracted_parameter)
 
-                result_json["missingParameters"].remove(
-                    request_json.get("currentNode"))
+            result_json["missingParameters"].remove(
+                request_json.get("currentNode"))
 
-                if len(result_json["missingParameters"]) == 0:
-                    result_json["complete"] = True
-                    context_manager.update_request_context(result_json["extractedParameters"])
-                else:
-                    missing_parameter = result_json["missingParameters"][0]
-                    result_json["complete"] = False
-                    current_node = [
-                        node for node in intent.parameters if missing_parameter in node.name][0]
-                    result_json["currentNode"] = current_node.name
-                    result_json["speechResponse"] = split_sentence(current_node.prompt)
-            else:
-                result_json["currentNode"] = None
-                result_json["missingParameters"] = []
-                result_json["parameters"] = {}
-                result_json["intent"] = {}
+            if len(result_json["missingParameters"]) == 0:
                 result_json["complete"] = True
+                context_manager.update_request_context(result_json["extractedParameters"])
+            else:
+                missing_parameter = result_json["missingParameters"][0]
+                result_json["complete"] = False
+                current_node = [
+                    node for node in intent.parameters if missing_parameter in node.name][0]
+                result_json["currentNode"] = current_node.name
+                result_json["speechResponse"] = split_sentence(current_node.prompt)
+        else:
+            result_json["currentNode"] = None
+            result_json["missingParameters"] = []
+            result_json["parameters"] = {}
+            result_json["intent"] = {
+                "confidence": 1,
+                "id": "cancel",
+            }
+            result_json["complete"] = True
+            intent = Intent.objects.get(intentId="cancel")
 
         if result_json["complete"]:
             context_manager.update_request_context(result_json["extractedParameters"])
@@ -159,7 +163,7 @@ def api():
                 isJson = False
                 parameters = result_json["extractedParameters"]
                 headers = intent.apiDetails.get_headers()
-                app.logger.info("headers %s"%headers)
+                app.logger.info("headers %s" % headers)
                 url_template = Template(
                     intent.apiDetails.url, undefined=SilentUndefined)
                 rendered_url = url_template.render(**context_manager.get_request_context())
@@ -171,18 +175,19 @@ def api():
 
                 try:
                     result = call_api(rendered_url,
-                                      intent.apiDetails.requestType,headers,
+                                      intent.apiDetails.requestType, headers,
                                       parameters, isJson)
                 except Exception as e:
                     app.logger.warn("API call failed", e)
                     result_json["speechResponse"] = ["Service is not available. Please try again later."]
                 else:
                     context_manager.update_request_context({
-                        "result":result
+                        "result": result
                     })
                     template = Template(
                         intent.speechResponse, undefined=SilentUndefined)
-                    result_json["speechResponse"] = split_sentence(template.render(**context_manager.get_request_context()))
+                    result_json["speechResponse"] = split_sentence(
+                        template.render(**context_manager.get_request_context()))
             else:
                 template = Template(intent.speechResponse,
                                     undefined=SilentUndefined)
@@ -194,6 +199,7 @@ def api():
         return build_response.build_json(result_json)
     else:
         return abort(400)
+
 
 def update_model(app, message, **extra):
     """
@@ -211,12 +217,14 @@ def update_model(app, message, **extra):
     global entity_extraction
     entity_extraction = EntityExtractor(synonyms)
     app.logger.info("Intent Model updated")
-    
+
+
 # Loading ML Models at app startup
 with app.app_context():
-    update_model(app,"Modles updated")
+    update_model(app, "Modles updated")
 
 model_updated_signal.connect(update_model, app)
+
 
 def predict(sentence):
     """
@@ -225,9 +233,9 @@ def predict(sentence):
     :return:
     """
     bot = Bot.objects.get(name="default")
-    predicted,intents = sentence_classifier.process(sentence)
+    predicted, intents = sentence_classifier.process(sentence)
     app.logger.info("predicted intent %s", predicted)
     if predicted["confidence"] < bot.config.get("confidence_threshold", .90):
-        return Intent.objects(intentId=app.config["DEFAULT_FALLBACK_INTENT_NAME"]).first().intentId, 1.0,[]
+        return Intent.objects(intentId=app.config["DEFAULT_FALLBACK_INTENT_NAME"]).first().intentId, 1.0, []
     else:
-        return predicted["intent"], predicted["confidence"],intents[1:]
+        return predicted["intent"], predicted["confidence"], intents[1:]

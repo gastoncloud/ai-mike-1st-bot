@@ -44,7 +44,8 @@ class ContextManager():
 
         from .utils import merge_list_by_key
 
-        self.context_memory= merge_list_by_key(self.context_memory,output_contexts,"name")
+        self.context_memory = self.context_memory + output_contexts
+        # self.context_memory= merge_list_by_key(self.context_memory,output_contexts,"name")
 
     def unset_contexts(self):
         self.context_memory = []

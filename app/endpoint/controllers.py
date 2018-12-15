@@ -73,7 +73,9 @@ def api():
         else:
             intent_id = request_json["intent"]["id"]
 
-        intent = Intent.objects.get(intentId=intent_id)
+        print(intent_id)
+
+        intent = Intent.objects.get(intentId=intent_id.strip())
 
         # add intent information to final payload
         result_json["intent"] = {
@@ -87,13 +89,13 @@ def api():
 
             if intent.parameters:
                 # Extract NER entities
-                extracted_parameters = entity_extraction.predict(intent_id,
-                                                                 request_json.get("input"))
+                extracted_parameters =  request_json.get("extractedParameters") or {}
+                extracted_parameters.update(entity_extraction.predict(intent_id,
+                                                                 request_json.get("input")))
 
                 # initialize context manage
                 missing_parameters = []
                 result_json["missingParameters"] = []
-                result_json["extractedParameters"] = {}
                 result_json["parameters"] = []
 
                 for parameter in intent.parameters:

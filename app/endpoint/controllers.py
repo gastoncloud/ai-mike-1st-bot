@@ -61,7 +61,6 @@ def api():
         if request_json.get("event"):
             query_intent_id = request_json.get("event")
             confidence = 1
-            del result_json["event"]
 
         elif request_json.get("input"):
             query_intent_id, confidence, suggetions = predict(request_json.get("input"))
@@ -89,7 +88,12 @@ def api():
 
             if intent.parameters:
                 # Extract NER entities
-                extracted_parameters =  request_json.get("extractedParameters") or {}
+                if  result_json.get("event"):
+                    extracted_parameters =  request_json.get("extractedParameters") or {}
+                    del result_json["event"]
+                else:
+                    extracted_parameters = {}
+
                 extracted_parameters.update(entity_extraction.predict(intent_id,
                                                                  request_json.get("input")))
 

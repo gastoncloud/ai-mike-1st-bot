@@ -61,6 +61,7 @@ def api():
         if request_json.get("event"):
             query_intent_id = request_json.get("event")
             confidence = 1
+            result_json["event"]=None
 
         elif request_json.get("input"):
             query_intent_id, confidence, suggetions = predict(request_json.get("input"))

@@ -136,8 +136,7 @@ def api():
             # replace synonyms for entity values
             result_json["extractedParameters"].update(extracted_parameter)
 
-            result_json["missingParameters"].remove(
-                request_json.get("currentNode"))
+            result_json["missingParameters"].remove(request_json.get("currentNode"))
 
             if len(result_json["missingParameters"]) == 0:
                 result_json["complete"] = True
@@ -145,8 +144,7 @@ def api():
             else:
                 missing_parameter = result_json["missingParameters"][0]
                 result_json["complete"] = False
-                current_node = [
-                    node for node in intent.parameters if missing_parameter in node.name][0]
+                current_node = [node for node in intent.parameters if missing_parameter == node.name][0]
                 result_json["currentNode"] = current_node.name
                 result_json["speechResponse"] = split_sentence(current_node.prompt)
         else:

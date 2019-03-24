@@ -47,6 +47,7 @@ def api():
     :return json:
     """
     request_json = request.get_json(silent=True)
+    is_event = False
 
     if request_json:
         result_json = request_json
@@ -61,6 +62,8 @@ def api():
         if request_json.get("event"):
             query_intent_id = request_json.get("event")
             confidence = 1
+            is_event = True
+            del request_json["event"]
 
         elif request_json.get("input"):
             query_intent_id, confidence, suggetions = predict(request_json.get("input"))
@@ -72,29 +75,36 @@ def api():
         else:
             intent_id = request_json["intent"]["id"]
 
-        print(intent_id)
-
         intent = Intent.objects.get(intentId=intent_id.strip())
 
         # add intent information to final payload
         result_json["intent"] = {
             "object_id": str(intent.id),
             "confidence": confidence,
-            "id": str(intent.intentId)
+            "id": str(intent.intentId),
+            "fullFillExternally": request_json["intent"].get("fullFillExternally")  \
+                if "fullFillExternally" in request_json["intent"] else intent.fullFillExternally
         }
         app.logger.info("*******************************" + query_intent_id)
         app.logger.info("*******************************" + str("cancel" != query_intent_id))
-        if new_intent_flag and ("cancel" != query_intent_id):
-
+        if ("cancel" == query_intent_id):
+            result_json["currentNode"] = None
+            result_json["missingParameters"] = []
+            result_json["parameters"] = {}
+            result_json["intent"] = {
+                "confidence": 1,
+                "id": "cancel",
+            }
+            result_json["complete"] = True
+            intent = Intent.objects.get(intentId="cancel")
+        elif new_intent_flag:
             if intent.parameters:
                 # Extract NER entities
-                if  result_json.get("event"):
+                if  is_event:
                     extracted_parameters =  request_json.get("extractedParameters") or {}
-                    del result_json["event"]
                 else:
                     extracted_parameters = {}
-
-                extracted_parameters.update(entity_extraction.predict(intent_id,
+                    extracted_parameters.update(entity_extraction.predict(intent_id,
                                                                  request_json.get("input")))
 
                 # initialize context manage
@@ -127,7 +137,7 @@ def api():
             else:
                 result_json["complete"] = True
 
-        elif ((not request_json.get("complete")) and ("cancel" != query_intent_id)):
+        elif request_json.get("complete")==False and request_json.get("currentNode"):
 
             extracted_parameter = entity_extraction.replace_synonyms({
                 request_json.get("currentNode"): request_json.get("input")
@@ -148,58 +158,55 @@ def api():
                 result_json["currentNode"] = current_node.name
                 result_json["speechResponse"] = split_sentence(current_node.prompt)
         else:
-            result_json["currentNode"] = None
-            result_json["missingParameters"] = []
-            result_json["parameters"] = {}
-            result_json["intent"] = {
-                "confidence": 1,
-                "id": "cancel",
-            }
-            result_json["complete"] = True
-            intent = Intent.objects.get(intentId="cancel")
+            pass
 
         if result_json["complete"]:
             context_manager.update_request_context(result_json["extractedParameters"])
             context_manager.update_context_memory(intent, result_json["extractedParameters"])
-            app.logger.info("$$$$$$$$$$$$")
+            app.logger.info("$$$$$$$$$$$$ COMPLETED")
             app.logger.info(context_manager.request_context)
             if intent.apiTrigger:
-                isJson = False
-                parameters = result_json["extractedParameters"]
-                headers = intent.apiDetails.get_headers()
-                app.logger.info("headers %s" % headers)
-                url_template = Template(
-                    intent.apiDetails.url, undefined=SilentUndefined)
-                rendered_url = url_template.render(**context_manager.get_request_context())
-                if intent.apiDetails.isJson:
-                    isJson = True
-                    request_template = Template(
-                        intent.apiDetails.jsonData, undefined=SilentUndefined)
-                    parameters = json.loads(request_template.render(**context_manager.get_request_context()))
+                if result_json["intent"].get("fullFillExternally") == False:
+                    isJson = False
+                    parameters = result_json["extractedParameters"]
+                    headers = intent.apiDetails.get_headers()
+                    app.logger.info("headers %s" % headers)
+                    url_template = Template(
+                        intent.apiDetails.url, undefined=SilentUndefined)
+                    rendered_url = url_template.render(**context_manager.get_request_context())
+                    if intent.apiDetails.isJson:
+                        isJson = True
+                        request_template = Template(
+                            intent.apiDetails.jsonData, undefined=SilentUndefined)
+                        parameters = json.loads(request_template.render(**context_manager.get_request_context()))
 
-                try:
-                    result = call_api(rendered_url,
-                                      intent.apiDetails.requestType, headers,
-                                      parameters, isJson)
-                except Exception as e:
-                    app.logger.warn("API call failed", e)
-                    result_json["speechResponse"] = ["Service is not available. Please try again later."]
-                else:
-                    context_manager.update_request_context({
-                        "result": result
-                    })
-                    template = Template(
-                        intent.speechResponse, undefined=SilentUndefined)
-                    result_json["speechResponse"] = split_sentence(
+                    try:
+                        result = call_api(rendered_url,
+                                          intent.apiDetails.requestType, headers,
+                                          parameters, isJson)
+                    except Exception as e:
+                        app.logger.warn("API call failed", e)
+                        result_json["speechResponse"] = ["Service is not available. Please try again later."]
+                    else:
+                        context_manager.update_request_context({
+                            "result": result
+                        })
+                        template = Template(
+                            intent.speechResponse, undefined=SilentUndefined)
+                        result_json["speechResponse"] = split_sentence(
                         template.render(**context_manager.get_request_context()))
+                else:
+                    result_json["complete"] = False
+                    result_json["speechResponse"] = ["Please wait.."]
             else:
                 template = Template(intent.speechResponse,
                                     undefined=SilentUndefined)
                 app.logger.info(context_manager.get_request_context())
                 result_json["speechResponse"] = split_sentence(template.render(**context_manager.get_request_context()))
-
-        result_json["context"] = context_manager.context_memory
-        logger.info(request_json.get("input"), extra=result_json)
+        print(result_json)
+        if result_json["intent"]["fullFillExternally"] == False:
+            result_json["context"] = context_manager.context_memory
+            logger.info(request_json.get("input"), extra=result_json)
         return build_response.build_json(result_json)
     else:
         return abort(400)

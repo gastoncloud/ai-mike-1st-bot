@@ -207,6 +207,7 @@ def api():
                 del result_json["event"]
 
         if result_json["intent"]["fullFillExternally"] == False:
+            result_json["intent"].pop("fullFillExternally")
             result_json["context"] = context_manager.context_memory
             logger.info(request_json.get("input"), extra=result_json)
         return build_response.build_json(result_json)

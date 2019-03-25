@@ -63,7 +63,6 @@ def api():
             query_intent_id = request_json.get("event")
             confidence = 1
             is_event = True
-            del request_json["event"]
 
         elif request_json.get("input"):
             query_intent_id, confidence, suggetions = predict(request_json.get("input"))
@@ -203,7 +202,10 @@ def api():
                                     undefined=SilentUndefined)
                 app.logger.info(context_manager.get_request_context())
                 result_json["speechResponse"] = split_sentence(template.render(**context_manager.get_request_context()))
-        print(result_json)
+
+            if is_event and result_json["intent"].get("fullFillExternally") == False:
+                del result_json["event"]
+
         if result_json["intent"]["fullFillExternally"] == False:
             result_json["context"] = context_manager.context_memory
             logger.info(request_json.get("input"), extra=result_json)

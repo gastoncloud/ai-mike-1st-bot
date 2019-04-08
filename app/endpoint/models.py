@@ -9,7 +9,7 @@ class ContextManager():
 
     def get_request_context(self):
         context_memory_flat =  {
-         context.get("name"):context.get("parameters",{}) for context in self.context_memory
+         context.get("context") or  context.get("name"):context.get("parameters",{}) for context in self.context_memory
         }
         self.request_context.update(context_memory_flat)
 
@@ -36,9 +36,11 @@ class ContextManager():
 
         output_contexts = []
 
-        for context in self.intent.outputContexts:
+        # for context in self.intent.outputContexts:
+        if self.intent.outputContexts:
             output_contexts.append({
-                "name":context,
+                "name":intent.intentId,
+                "context":  self.intent.outputContexts[0],
                 "parameters":parameters
             })
 

@@ -32,6 +32,7 @@ def create_intent():
     intent.inputContexts = content.get("inputContexts")
     intent.outputContexts = content.get("outputContexts")
     intent.speechResponse = content.get("speechResponse")
+    intent.fullFillExternally = content.get("fullFillExternally",False)
     intent.trainingData = []
 
     if content.get("apiTrigger") is True:
@@ -97,7 +98,7 @@ def update_intent(id):
     :param json:
     :return:
     """
-    json_data = loads(request.get_data())
+    json_data = request.json
     intent = Intent.objects.get(id=ObjectId(id))
     intent = update_document(intent, json_data)
     intent.save()

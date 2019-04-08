@@ -3,7 +3,7 @@ import os
 
 class Config(object):
     DEBUG = False
-    MONGODB_DB = "iky-ai"
+    MONGODB_DB = "iky-ai-3"
     MONGODB_HOST = "127.0.0.1"
     MONGODB_PORT = 27017
     MONGODB_USERNAME = ""

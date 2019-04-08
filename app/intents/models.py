@@ -44,6 +44,7 @@ class Intent(Document):
     inputContexts = ListField(default=[])
     outputContexts = ListField(default=[])
     apiTrigger = BooleanField(required=True)
+    fullFillExternally = BooleanField(required=False,default=False)
     apiDetails = EmbeddedDocumentField(ApiDetails)
     speechResponse = StringField(required=True)
     parameters = ListField(EmbeddedDocumentField(Parameter))

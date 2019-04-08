@@ -44,6 +44,7 @@ export class IntentComponent implements OnInit {
       intentId: [''],
       userDefined: [true],
       fullFillExternally: [false],
+      endOfConversation: [false],
       speechResponse: [''],
       inputContexts:this.fb.array(this.intent ? this.intent.inputContexts : []),
       outputContexts:this.fb.array(this.intent ? this.intent.outputContexts : []),

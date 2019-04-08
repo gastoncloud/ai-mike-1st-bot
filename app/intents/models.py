@@ -40,6 +40,7 @@ class ApiDetails(EmbeddedDocument):
 class Intent(Document):
     name = StringField(max_length=100, required=True, unique=True)
     userDefined = BooleanField(default=True)
+    endOfConversation = BooleanField(default=True)
     intentId = StringField(required=True,unique=True)
     inputContexts = ListField(default=[])
     outputContexts = ListField(default=[])

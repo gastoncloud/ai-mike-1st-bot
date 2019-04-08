@@ -32,6 +32,7 @@ def create_intent():
     intent.inputContexts = content.get("inputContexts")
     intent.outputContexts = content.get("outputContexts")
     intent.speechResponse = content.get("speechResponse")
+    intent.endOfConversation = content.get("endOfConversation",False)
     intent.fullFillExternally = content.get("fullFillExternally",False)
     intent.trainingData = []
 

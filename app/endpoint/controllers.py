@@ -94,6 +94,7 @@ def api():
                 "confidence": 1,
                 "id": "cancel",
             }
+            result_json["context"] = result_json["context"][0]
             result_json["complete"] = True
             intent = Intent.objects.get(intentId="cancel")
         elif new_intent_flag:

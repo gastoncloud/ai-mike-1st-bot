@@ -195,6 +195,8 @@ def api():
                             intent.speechResponse, undefined=SilentUndefined)
                         result_json["speechResponse"] = split_sentence(
                         template.render(**context_manager.get_request_context()))
+                        if intent.endOfConversation:
+                            result_json["endOfConversation"] = True
                 else:
                     result_json["complete"] = False
                     result_json["speechResponse"] = ["Please wait.."]
@@ -203,6 +205,8 @@ def api():
                                     undefined=SilentUndefined)
                 app.logger.info(context_manager.get_request_context())
                 result_json["speechResponse"] = split_sentence(template.render(**context_manager.get_request_context()))
+                if intent.endOfConversation:
+                    result_json["endOfConversation"] = True
 
             if is_event and result_json["intent"].get("fullFillExternally") == False:
                 del result_json["event"]

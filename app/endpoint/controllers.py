@@ -93,6 +93,7 @@ def api():
             result_json["intent"] = {
                 "confidence": 1,
                 "id": "cancel",
+                "fullFillExternally":False
             }
             result_json["context"] = result_json["context"][0]
             result_json["complete"] = True

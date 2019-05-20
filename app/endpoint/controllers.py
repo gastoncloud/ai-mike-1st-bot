@@ -199,6 +199,9 @@ def api():
                         template.render(**context_manager.get_request_context()))
                         if intent.endOfConversation:
                             result_json["endOfConversation"] = True
+                            context_manager.context_memory = []
+                            context_manager.request_context = []
+
                 else:
                     result_json["complete"] = False
                     result_json["speechResponse"] = ["Please wait.."]
@@ -209,6 +212,8 @@ def api():
                 result_json["speechResponse"] = split_sentence(template.render(**context_manager.get_request_context()))
                 if intent.endOfConversation:
                     result_json["endOfConversation"] = True
+                    context_manager.context_memory = []
+                    context_manager.request_context = []
 
             if is_event and result_json["intent"].get("fullFillExternally") == False:
                 del result_json["event"]

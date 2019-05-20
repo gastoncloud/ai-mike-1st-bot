@@ -51,3 +51,4 @@ class Intent(Document):
     parameters = ListField(EmbeddedDocumentField(Parameter))
     labeledSentences = EmbeddedDocumentListField(LabeledSentences)
     trainingData = ListField(required=False)
+    quickReplies = ListField(required=False,default=[])

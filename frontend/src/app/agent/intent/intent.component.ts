@@ -50,6 +50,7 @@ export class IntentComponent implements OnInit {
       outputContexts:this.fb.array(this.intent ? this.intent.outputContexts : []),
       apiTrigger: [false],
       apiDetails: this.initApiDetails(),
+      quickReplies: this.fb.array(this.intent ? this.intent.quickReplies : []),
       parameters: this.fb.array(
         this.intent && this.intent.parameters ? this.intent.parameters.map(n => {
           return this.initParameter(n);
@@ -187,6 +188,22 @@ export class IntentComponent implements OnInit {
 
   removeOutputContext(context_index){
     const control = <FormArray>this.intentForm.controls['outputContexts'];
+    control.removeAt(context_index);
+
+  }
+
+
+ // quick replieds
+ addQuickReplies(event){
+    if (event.value == "")
+      return
+    const control = <FormArray>this.intentForm.controls['quickReplies'];
+    control.push(new FormControl(event.value))
+    event.input.value = ""
+  }
+
+  removeQuickReplies(context_index){
+    const control = <FormArray>this.intentForm.controls['quickReplies'];
     control.removeAt(context_index);
 
   }

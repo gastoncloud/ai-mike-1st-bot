@@ -34,6 +34,7 @@ def create_intent():
     intent.speechResponse = content.get("speechResponse")
     intent.endOfConversation = content.get("endOfConversation",False)
     intent.fullFillExternally = content.get("fullFillExternally",False)
+    intent.quickReplies = content.get("quickReplies",[])
     intent.trainingData = []
 
     if content.get("apiTrigger") is True:

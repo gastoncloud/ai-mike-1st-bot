@@ -140,6 +140,18 @@
     </p>
 
 
+    <mat-form-field>
+      <mat-label>Quick Replies</mat-label>
+      <mat-chip-list #quickReplies>
+        <mat-chip *ngFor="let context of intentForm.controls.quickReplies.controls;let context_index=index" [selectable]="true" [removable]="true" (remove)="removeQuickReplies(context_index)">
+          {{context.value}}
+          <mat-icon matChipRemove *ngIf="true">cancel</mat-icon>
+        </mat-chip>
+        <input placeholder="Output contexts" [matChipInputFor]="quickReplies" [matChipInputSeparatorKeyCodes]="separatorKeysCodes" [matChipInputAddOnBlur]="true"
+          (matChipInputTokenEnd)="addQuickReplies($event)" />
+      </mat-chip-list>
+    </mat-form-field>
+
 
     <mat-card-actions>
       <button mat-raised-button color="primary" [disabled]="!intentForm.valid">Save</button>

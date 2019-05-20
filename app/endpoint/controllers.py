@@ -99,6 +99,7 @@ def api():
             result_json["complete"] = True
             intent = Intent.objects.get(intentId="cancel")
         elif new_intent_flag:
+            result_json["quickReplies"] = intent.quickReplies
             if intent.parameters:
                 # Extract NER entities
                 if  is_event:

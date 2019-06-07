@@ -37,6 +37,8 @@ export class ChatComponent implements OnInit {
   chatForm: FormGroup;
   chatFormFields: any;
   @ViewChild('scrollMe') private myScrollContainer: ElementRef;
+  
+  listening: boolean = false;
 
   constructor(
     public fb: FormBuilder,
@@ -137,6 +139,33 @@ scrollToBottom(): void {
 
   }
 
+  recognize(){
+    /*
+    Perform speech recognition using Web Speech API
+    works in Google Chrome only
+    */
+
+   // disable talk button
+   this.listening = true
+
+    const {webkitSpeechRecognition} : IWindow = <IWindow>window;
+    const recognition = new webkitSpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognition.start();
+    
+    recognition.onresult = (event)=> {
+      var last = event.results.length - 1;
+      var text = event.results[last][0].transcript;
+      this.chatForm.controls['input'].setValue(text);
+      console.log(text)
+      console.log('Confidence: ' + event.results[0][0].confidence);
+
+      this.listening = false
+    }
+  }
+
 }
 
 export class Message {
@@ -147,4 +176,8 @@ export class Message {
     this.content = content;
     this.author = author;
   }
+}
+
+export interface IWindow extends Window {
+  webkitSpeechRecognition: any;
 }

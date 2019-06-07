@@ -24,7 +24,9 @@
         <mat-input-container fxFlex>
           <input type="text" matInput formControlName="input" placeholder="Type your message here" autocomplete=off>
         </mat-input-container>
+       
       </form>
+      <button mat-raised-button  [disabled]="listening" color="primary" (click)="recognize()">talk</button>
     </mat-card>
     
     <mat-card fxFlex="50" class="json-response">

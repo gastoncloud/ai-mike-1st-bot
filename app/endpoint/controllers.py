@@ -182,9 +182,15 @@ def api():
                             intent.apiDetails.jsonData, undefined=SilentUndefined)
                         parameters = json.loads(request_template.render(**context_manager.get_request_context()))
 
+                    # apply templating on headers
+                    templated_headers = {}
+                    for k,v in headers:
+                        header_template = Template(v, undefined=SilentUndefined)
+                        templated_headers[k]= header_template.render(**context_manager.get_request_context())
+
                     try:
                         result = call_api(rendered_url,
-                                          intent.apiDetails.requestType, headers,
+                                          intent.apiDetails.requestType, templated_headers,
                                           parameters, isJson)
                     except Exception as e:
                         app.logger.warn("API call failed", e)
